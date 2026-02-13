@@ -17,7 +17,8 @@ public class DoctorEntity {
   @Column(name = "lastName", length = 50)
   private String lastName;
 
-  @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "doctor_id")
   private List<PatientEntity> patients;
 
   public Long getId() {

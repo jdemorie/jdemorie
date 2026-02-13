@@ -96,7 +96,6 @@ public class DatabaseService {
       doctor.setPatients(new ArrayList<>());
     }
     doctor.getPatients().add(patient);
-    patient.setDoctor(doctor);
     doctorRepository.save(doctor);
     patientRepository.save(patient);
   }

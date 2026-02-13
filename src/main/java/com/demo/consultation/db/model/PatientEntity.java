@@ -15,10 +15,6 @@ public class PatientEntity {
   @Column(name = "lastName", length = 50)
   private String lastName;
 
-  @ManyToOne
-  @JoinColumn(name = "doctor_id")
-  private DoctorEntity doctor;
-
   public PatientEntity() {
   }
 
@@ -28,14 +24,6 @@ public class PatientEntity {
 
   public void setId(Long id) {
     this.id = id;
-  }
-
-  public DoctorEntity getDoctor() {
-    return doctor;
-  }
-
-  public void setDoctor(DoctorEntity borrower) {
-    this.doctor = borrower;
   }
 
   public String getLastName() {
