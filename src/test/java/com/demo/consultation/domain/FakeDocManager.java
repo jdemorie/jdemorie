@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class FakeDocManager implements DataManager {
   private final List<Patient> patients = new ArrayList<>();
@@ -13,7 +12,7 @@ public class FakeDocManager implements DataManager {
 
   @Override
   public Patient createPatient(String firstName, String lastName) {
-    Patient patient = new Patient(firstName, lastName);
+    Patient patient = new Patient(new PatientId(firstName, lastName));
     patients.add(patient);
     return patient;
   }
@@ -24,7 +23,8 @@ public class FakeDocManager implements DataManager {
   }
 
   private Optional<Patient> getPatient(String firstName, String lastName) {
-    return patients.stream().filter(patient -> patient.firstName().equals(firstName) && patient.lastName().equals(lastName)).findFirst();
+    return patients.stream().filter(patient -> patient.patientId().firstName().equals(firstName) && patient.patientId().lastName().equals(lastName))
+        .findFirst();
   }
 
   @Override
@@ -35,6 +35,10 @@ public class FakeDocManager implements DataManager {
   @Override
   public List<Doctor> getDoctorList() {
     return Collections.unmodifiableList(doctors);
+  }
+
+  @Override
+  public void save(Doctor doctor) {
   }
 
   @Override
@@ -58,19 +62,20 @@ public class FakeDocManager implements DataManager {
 
   @Override
   public Consultation createConsultation(String consultationName, Patient patient, Doctor doctor) {
-    Consultation consultation = new Consultation(consultationName, patient, doctor);
+    Consultation consultation = new Consultation(new ConsultationId(consultationName), patient, doctor);
     consultations.add(consultation);
     return consultation;
   }
 
   private Optional<Doctor> getDoctor(String firstName, String lastName) {
-    return doctors.stream().filter(doctor -> doctor.firstName().equals(firstName) && doctor.lastName().equals(lastName)).findFirst();
+    return doctors.stream().filter(doctor -> doctor.doctorId().firstName().equals(firstName) && doctor.doctorId().lastName().equals(lastName))
+        .findFirst();
   }
 
   @Override
   public Doctor getDoctorByFirstAndLastName(String firstName, String lastName) throws DataNotFoundException {
     for (Doctor doctor : doctors) {
-      if (doctor.firstName().equals(firstName) && doctor.lastName().equals(lastName)) {
+      if (doctor.doctorId().firstName().equals(firstName) && doctor.doctorId().lastName().equals(lastName)) {
         return doctor;
       }
     }
@@ -80,21 +85,11 @@ public class FakeDocManager implements DataManager {
   @Override
   public Patient getPatientByFirstAndLastName(String firstName, String lastName) throws DataNotFoundException {
     for (Patient patient : patients) {
-      if (patient.firstName().equals(firstName) && patient.lastName().equals(lastName)) {
+      if (patient.patientId().firstName().equals(firstName) && patient.patientId().lastName().equals(lastName)) {
         return patient;
       }
     }
     throw new DataNotFoundException("Patient with name " + firstName + " " + lastName + " not found");
-  }
-
-  @Override
-  public List<Consultation> getConsultationsByPatient(Patient patient) {
-    return consultations.stream().filter(consultation -> consultation.patient().equals(patient)).collect(Collectors.toList());
-  }
-
-  @Override
-  public void addPatientToDoctor(Patient patient, Doctor doctor) throws DataNotFoundException {
-    doctor.addPatient(patient);
   }
 
   @Override

@@ -1,7 +1,9 @@
 package com.demo.consultation;
 
 import com.demo.consultation.domain.Doctor;
+import com.demo.consultation.domain.DoctorId;
 import com.demo.consultation.domain.Patient;
+import com.demo.consultation.domain.PatientId;
 import org.junit.jupiter.api.Test;
 
 public abstract class GlobalConsultationTest {
@@ -9,17 +11,18 @@ public abstract class GlobalConsultationTest {
 
   @Test
   void givenADocManagerWhenICreateAndDeleteADoctorThenTheDoctorStoredShouldBe() throws Exception {
+    DoctorId doctorId = new DoctorId("jerome", "durant");
     scenario.thenTheListOfDoctorsStoredShouldBe()
         .whenICreateADoctor("jerome", "durant")
-        .thenTheListOfDoctorsStoredShouldBe(new Doctor("jerome", "durant"))
+        .thenTheListOfDoctorsStoredShouldBe(doctorId)
         .whenIDeleteADoctor("jerome", "durant")
         .thenTheListOfDoctorsStoredShouldBe();
   }
 
   @Test
   void givenADocManagerWhenIAssignAPatientToADoctorThenDoctorKnowsThePatient() throws Exception {
-    Doctor doctor = new Doctor("jerome", "durant");
-    Patient patient = new Patient("john", "doe");
+    DoctorId doctor = new DoctorId("jerome", "durant");
+    PatientId patient = new PatientId("john", "doe");
     scenario.whenICreateADoctor("jerome", "durant")
         .whenICreateAPatient("john", "doe")
         .whenIAssignAPatientToADoctor(patient, doctor)
@@ -28,8 +31,8 @@ public abstract class GlobalConsultationTest {
 
   @Test
   void givenAPatientWhenThePatientHaveAConsultationWithADoctorThenICanGetTheConsultationSummary() throws Exception {
-    Doctor doctor = new Doctor("jerome", "durant");
-    Patient patient = new Patient("john", "doe");
+    DoctorId doctor = new DoctorId("jerome", "durant");
+    PatientId patient = new PatientId("john", "doe");
     scenario.whenICreateADoctor("jerome", "durant")
         .whenICreateAPatient("john", "doe")
         .whenPatientHaveAConsultationWithADoctor(patient, doctor, "firstConsultation")
@@ -39,8 +42,8 @@ public abstract class GlobalConsultationTest {
 
   @Test
   void givenAPatientWhenIWantToKnowAllHisConsultationThenIGetTheListOfConsultation() throws Exception {
-    Doctor doctor = new Doctor("jerome", "durant");
-    Patient patient = new Patient("john", "doe");
+    DoctorId doctor = new DoctorId("jerome", "durant");
+    PatientId patient = new PatientId("john", "doe");
     scenario.whenICreateADoctor("jerome", "durant")
         .whenICreateAPatient("john", "doe")
         .whenPatientHaveAConsultationWithADoctor(patient, doctor, "firstConsultation")
@@ -50,9 +53,9 @@ public abstract class GlobalConsultationTest {
 
   @Test
   void givenADoctorWhenIAssignSeveralPatientsToADoctorThenDoctorKnowsAllThePatients() throws Exception {
-    Doctor doctor = new Doctor("jerome", "durant");
-    Patient patient1 = new Patient("john", "doe");
-    Patient patient2 = new Patient("jane", "doe");
+    DoctorId doctor = new DoctorId("jerome", "durant");
+    PatientId patient1 = new PatientId("john", "doe");
+    PatientId patient2 = new PatientId("jane", "doe");
     scenario.whenICreateADoctor("jerome", "durant")
         .whenICreateAPatient("john", "doe")
         .whenICreateAPatient("jane", "doe")

@@ -1,8 +1,8 @@
 package com.demo.consultation;
 
-import com.demo.consultation.domain.Consultation;
-import com.demo.consultation.domain.Doctor;
-import com.demo.consultation.domain.Patient;
+import com.demo.consultation.domain.ConsultationId;
+import com.demo.consultation.domain.DoctorId;
+import com.demo.consultation.domain.PatientId;
 
 public interface ConsultationScenario {
   ConsultationScenario givenADocManager();
@@ -15,19 +15,19 @@ public interface ConsultationScenario {
 
   ConsultationScenario whenIDeleteAPatient(String firstName, String lastName) throws Exception;
 
-  ConsultationScenario whenPatientHaveAConsultationWithADoctor(Patient patient, Doctor doctor, String consultationName) throws Exception;
+  ConsultationScenario whenPatientHaveAConsultationWithADoctor(PatientId patientId, DoctorId doctorId, String consultationName) throws Exception;
 
-  ConsultationScenario whenIAssignAPatientToADoctor(Patient patient, Doctor doctor) throws Exception;
+  ConsultationScenario whenIAssignAPatientToADoctor(PatientId patientId, DoctorId doctorId) throws Exception;
 
-  ConsultationScenario thenTheListOfPatientsStoredShouldBe(Patient... patients) throws Exception;
+  ConsultationScenario thenTheListOfPatientsStoredShouldBe(PatientId... patientIds) throws Exception;
 
-  ConsultationScenario thenTheListOfDoctorsStoredShouldBe(Doctor... doctors) throws Exception;
+  ConsultationScenario thenTheListOfDoctorsStoredShouldBe(DoctorId... doctorIds) throws Exception;
 
-  ConsultationScenario thenTheListOfConsultationsStoredShouldBe(Consultation... consultations) throws Exception;
+  ConsultationScenario thenTheListOfConsultationsStoredShouldBe(ConsultationId... consultationIds) throws Exception;
 
-  ConsultationScenario thenTheConsultationShouldExistForPatient(Patient patient, String... consultationNames) throws Exception;
+  ConsultationScenario thenTheConsultationShouldExistForPatient(PatientId patientId, String... consultationNames) throws Exception;
 
-  ConsultationScenario thenDoctorShouldKnowPatient(Doctor doctor, Patient patient) throws Exception;
+  ConsultationScenario thenDoctorShouldKnowPatient(DoctorId doctorId, PatientId patientId) throws Exception;
 
   ConsultationScenario whenICleanAllData() throws Exception;
 }

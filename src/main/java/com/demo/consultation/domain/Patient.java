@@ -1,4 +1,4 @@
 package com.demo.consultation.domain;
 
-public record Patient(String firstName, String lastName) {
+public record Patient(PatientId patientId) {
 }

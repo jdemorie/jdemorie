@@ -9,9 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ConsultationManagerScenario implements ConsultationScenario {
   private ConsultationManager consultationManager;
-  private Doctor doctor;
-  private Patient patient;
-  private Consultation consultation;
 
   public ConsultationScenario givenADocManager() {
     consultationManager = new ConsultationManager(new FakeDocManager());
@@ -19,7 +16,7 @@ public class ConsultationManagerScenario implements ConsultationScenario {
   }
 
   public ConsultationScenario whenICreateADoctor(String firstName, String lastName) {
-    doctor = consultationManager.createDoctor(firstName, lastName);
+    consultationManager.createDoctor(firstName, lastName);
     return this;
   }
 
@@ -29,7 +26,7 @@ public class ConsultationManagerScenario implements ConsultationScenario {
   }
 
   public ConsultationScenario whenICreateAPatient(String firstName, String lastName) {
-    patient = consultationManager.createPatient(firstName, lastName);
+    consultationManager.createPatient(firstName, lastName);
     return this;
   }
 
@@ -39,38 +36,42 @@ public class ConsultationManagerScenario implements ConsultationScenario {
     return this;
   }
 
-  public ConsultationScenario whenPatientHaveAConsultationWithADoctor(Patient patient, Doctor doctor, String consultationName) throws Exception {
-    consultation = consultationManager.createConsultation(patient, doctor, consultationName);
+  public ConsultationScenario whenPatientHaveAConsultationWithADoctor(PatientId patientId, DoctorId doctorId, String consultationName)
+      throws Exception {
+    consultationManager.createConsultation(patientId, doctorId, consultationName);
     return this;
   }
 
-  public ConsultationScenario whenIAssignAPatientToADoctor(Patient patient, Doctor doctor) {
-    doctor.addPatient(patient);
+  public ConsultationScenario whenIAssignAPatientToADoctor(PatientId patientId, DoctorId doctorId) throws Exception {
+    consultationManager.addPatientToDoctor(patientId, doctorId);
     return this;
   }
 
-  public ConsultationScenario thenTheListOfPatientsStoredShouldBe(Patient... patients) {
+  public ConsultationScenario thenTheListOfPatientsStoredShouldBe(PatientId... patients) {
     assertArrayEquals(patients, consultationManager.getPatientList().toArray());
     return this;
   }
 
-  public ConsultationScenario thenTheListOfDoctorsStoredShouldBe(Doctor... doctors) {
-    assertArrayEquals(doctors, consultationManager.getDoctorList().toArray());
+  public ConsultationScenario thenTheListOfDoctorsStoredShouldBe(DoctorId... doctors) {
+    assertArrayEquals(doctors, consultationManager.getDoctorList().stream().map(Doctor::doctorId).toArray());
     return this;
   }
 
-  public ConsultationScenario thenTheListOfConsultationsStoredShouldBe(Consultation... consultations) {
-    assertArrayEquals(consultations, consultationManager.getConsultations().toArray());
+  public ConsultationScenario thenTheListOfConsultationsStoredShouldBe(ConsultationId... consultationIds) {
+    assertArrayEquals(consultationIds, consultationManager.getConsultations().stream().map(Consultation::consultationId).toArray());
     return this;
   }
 
-  public ConsultationScenario thenTheConsultationShouldExistForPatient(Patient patient, String... consultationNames) throws Exception {
-    List<Consultation> consultationForPatient = consultationManager.getConsultationsByPatient(patient);
-    assertArrayEquals(consultationNames, consultationForPatient.stream().map(Consultation::consultationName).toArray());
+  public ConsultationScenario thenTheConsultationShouldExistForPatient(PatientId patientId, String... consultationNames) throws Exception {
+    List<Consultation> consultationForPatient = consultationManager.getConsultationsByPatient(patientId.firstName(), patientId.lastName());
+    assertArrayEquals(consultationNames,
+                      consultationForPatient.stream().map(consultation -> consultation.consultationId().consultationName()).toArray());
     return this;
   }
 
-  public ConsultationScenario thenDoctorShouldKnowPatient(Doctor doctor, Patient patient) {
+  public ConsultationScenario thenDoctorShouldKnowPatient(DoctorId doctorId, PatientId patientId) throws Exception {
+    Patient patient = consultationManager.getPatientByFirstAndLastName(patientId.firstName(), patientId.lastName());
+    Doctor doctor = consultationManager.getDoctorByFirstAndLastName(doctorId.firstName(), doctorId.lastName());
     assertTrue(doctor.knowsPatient(patient));
     return this;
   }

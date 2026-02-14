@@ -6,22 +6,16 @@ import java.util.List;
 import java.util.Objects;
 
 public final class Doctor {
-  private final String firstName;
-  private final String lastName;
+  private final DoctorId doctorId;
   private final List<Patient> patients;
 
   public Doctor(String firstName, String lastName) {
-    this.firstName = firstName;
-    this.lastName = lastName;
+    this.doctorId = new DoctorId(firstName, lastName);
     this.patients = new ArrayList<>();
   }
 
-  public String firstName() {
-    return firstName;
-  }
-
-  public String lastName() {
-    return lastName;
+  public DoctorId doctorId() {
+    return doctorId;
   }
 
   public List<Patient> getPatients() {
@@ -33,28 +27,17 @@ public final class Doctor {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (obj == this) {
-      return true;
-    }
-    if (obj == null || obj.getClass() != this.getClass()) {
+  public boolean equals(Object o) {
+    if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    var that = (Doctor) obj;
-    return Objects.equals(this.firstName, that.firstName) &&
-           Objects.equals(this.lastName, that.lastName);
+    Doctor doctor = (Doctor) o;
+    return Objects.equals(doctorId, doctor.doctorId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(firstName, lastName);
-  }
-
-  @Override
-  public String toString() {
-    return "Person[" +
-           "firstName=" + firstName + ", " +
-           "lastName=" + lastName + ']';
+    return Objects.hashCode(doctorId);
   }
 
   public boolean knowsPatient(Patient patient) {

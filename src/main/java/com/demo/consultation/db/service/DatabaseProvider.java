@@ -6,6 +6,7 @@ import com.demo.consultation.db.model.EntityNotFoundException;
 import com.demo.consultation.db.model.PatientEntity;
 import com.demo.consultation.domain.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,12 +23,12 @@ public class DatabaseProvider implements DataManager {
     patientEntity.setFirstName(firstName);
     patientEntity.setLastName(lastName);
     dataService.save(patientEntity);
-    return new Patient(firstName, lastName);
+    return new Patient(new PatientId(firstName, lastName));
   }
 
   @Override
   public List<Patient> getPatientList() {
-    return dataService.listPatients().stream().map(entity -> new Patient(entity.getFirstName(), entity.getLastName()))
+    return dataService.listPatients().stream().map(entity -> new Patient(new PatientId(entity.getFirstName(), entity.getLastName())))
         .collect(Collectors.toList());
   }
 
@@ -35,6 +36,42 @@ public class DatabaseProvider implements DataManager {
   public List<Doctor> getDoctorList() {
     return dataService.listDoctors().stream().map(entity -> new Doctor(entity.getFirstName(), entity.getLastName()))
         .collect(Collectors.toList());
+  }
+
+  @Override
+  public void save(Doctor doctor) throws DataNotFoundException {
+    try {
+      DoctorEntity doctorEntity = dataService.getDoctorByFirstAndLastName(doctor.doctorId().firstName(), doctor.doctorId().lastName());
+      List<Patient> patients = doctor.getPatients();
+      List<PatientEntity> patientEntities = doctorEntity.getPatients();
+      if (patientEntities == null) {
+        patientEntities = new ArrayList<>();
+      }
+      List<PatientId> currentPatientIds = patientEntities.stream().map(entity -> new PatientId(entity.getFirstName(), entity.getLastName())).toList();
+      List<PatientId> toAdd = new ArrayList<>();
+      for (Patient patient : patients) {
+        if (!currentPatientIds.contains(patient.patientId())) {
+          toAdd.add(patient.patientId());
+        }
+      }
+      List<PatientId> toRemove = new ArrayList<>();
+      for (PatientId patientId : currentPatientIds) {
+        if (patients.stream().noneMatch(patient -> patient.patientId().equals(patientId))) {
+          toRemove.add(patientId);
+        }
+      }
+      for (PatientId patientId : toAdd) {
+        PatientEntity patientEntity = dataService.getPatientByFirstAndLastName(patientId.firstName(), patientId.lastName());
+        patientEntities.add(patientEntity);
+      }
+      for (PatientId patientId : toRemove) {
+        PatientEntity patientEntity = dataService.getPatientByFirstAndLastName(patientId.firstName(), patientId.lastName());
+        patientEntities.remove(patientEntity);
+      }
+      dataService.save(doctorEntity);
+    } catch (EntityNotFoundException e) {
+      throw new DataNotFoundException(e.getMessage(), e);
+    }
   }
 
   @Override
@@ -78,10 +115,10 @@ public class DatabaseProvider implements DataManager {
     try {
       ConsultationEntity consultationEntity = new ConsultationEntity();
       consultationEntity.setConsultationName(consultationName);
-      consultationEntity.setPatient(dataService.getPatientByFirstAndLastName(patient.firstName(), patient.lastName()));
-      consultationEntity.setDoctor(dataService.getDoctorByFirstAndLastName(doctor.firstName(), doctor.lastName()));
+      consultationEntity.setPatient(dataService.getPatientByFirstAndLastName(patient.patientId().firstName(), patient.patientId().lastName()));
+      consultationEntity.setDoctor(dataService.getDoctorByFirstAndLastName(doctor.doctorId().firstName(), doctor.doctorId().lastName()));
       dataService.save(consultationEntity);
-      return new Consultation(consultationName, patient, doctor);
+      return new Consultation(new ConsultationId(consultationName), patient, doctor);
     } catch (EntityNotFoundException e) {
       throw new DataNotFoundException(consultationName);
     }
@@ -95,7 +132,7 @@ public class DatabaseProvider implements DataManager {
       List<PatientEntity> patientEntities = doctorEntity.getPatients();
       if (patientEntities != null) {
         for (PatientEntity patientEntity : patientEntities) {
-          doctor.addPatient(new Patient(patientEntity.getFirstName(), patientEntity.getLastName()));
+          doctor.addPatient(new Patient(new PatientId(patientEntity.getFirstName(), patientEntity.getLastName())));
         }
       }
       return doctor;
@@ -108,29 +145,7 @@ public class DatabaseProvider implements DataManager {
   public Patient getPatientByFirstAndLastName(String firstName, String lastName) throws DataNotFoundException {
     try {
       PatientEntity patientEntity = dataService.getPatientByFirstAndLastName(firstName, lastName);
-      return new Patient(patientEntity.getFirstName(), patientEntity.getLastName());
-    } catch (EntityNotFoundException e) {
-      throw new DataNotFoundException(e.getMessage(), e);
-    }
-  }
-
-  @Override
-  public List<Consultation> getConsultationsByPatient(Patient patient) throws DataNotFoundException {
-    try {
-      PatientEntity patientEntity = dataService.getPatientByFirstAndLastName(patient.firstName(), patient.lastName());
-      List<ConsultationEntity> consultationEntities = dataService.getConsultationsByPatient(patientEntity);
-      return List.of();
-    } catch (EntityNotFoundException e) {
-      throw new DataNotFoundException(e.getMessage(), e);
-    }
-  }
-
-  @Override
-  public void addPatientToDoctor(Patient patient, Doctor doctor) throws DataNotFoundException {
-    try {
-      PatientEntity patientEntity = dataService.getPatientByFirstAndLastName(patient.firstName(), patient.lastName());
-      DoctorEntity doctorEntity = dataService.getDoctorByFirstAndLastName(doctor.firstName(), doctor.lastName());
-      dataService.assignPatientToDoctor(patientEntity, doctorEntity);
+      return new Patient(new PatientId(patientEntity.getFirstName(), patientEntity.getLastName()));
     } catch (EntityNotFoundException e) {
       throw new DataNotFoundException(e.getMessage(), e);
     }
@@ -141,9 +156,9 @@ public class DatabaseProvider implements DataManager {
     return dataService.listConsultations().stream().map(entity -> {
       PatientEntity patientEntity = entity.getPatient();
       DoctorEntity doctorEntity = entity.getDoctor();
-      Patient patient = new Patient(patientEntity.getFirstName(), patientEntity.getLastName());
+      Patient patient = new Patient(new PatientId(patientEntity.getFirstName(), patientEntity.getLastName()));
       Doctor doctor = new Doctor(doctorEntity.getFirstName(), doctorEntity.getLastName());
-      return new Consultation(entity.getConsultationName(), patient, doctor);
+      return new Consultation(new ConsultationId(entity.getConsultationName()), patient, doctor);
     }).collect(Collectors.toList());
   }
 }

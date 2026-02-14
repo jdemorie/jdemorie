@@ -38,8 +38,8 @@ public class ServerController {
     List<Patient> patientList = consultationManager.getPatientList();
     return ResponseEntity.ok(patientList.stream().map(patient -> {
       PatientBean patientBean = new PatientBean();
-      patientBean.setFirstName(patient.firstName());
-      patientBean.setLastName(patient.lastName());
+      patientBean.setFirstName(patient.patientId().firstName());
+      patientBean.setLastName(patient.patientId().lastName());
       return patientBean;
     }).toList());
   }
@@ -47,7 +47,7 @@ public class ServerController {
   @PostMapping(path = "patient", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
   public ResponseEntity<PatientBean> createPatient(@RequestBody PatientBean patientBean) {
     Patient patient = consultationManager.createPatient(patientBean.getFirstName(), patientBean.getLastName());
-    return ResponseEntity.ok(new PatientBean(patient.firstName(), patient.lastName()));
+    return ResponseEntity.ok(new PatientBean(patient.patientId().firstName(), patient.patientId().lastName()));
   }
 
   @DeleteMapping(path = "patient", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
@@ -59,7 +59,7 @@ public class ServerController {
   @PostMapping(path = "doctor", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
   public ResponseEntity<DoctorBean> createDoctor(@RequestBody DoctorBean doctorBean) {
     Doctor doctor = consultationManager.createDoctor(doctorBean.getFirstName(), doctorBean.getLastName());
-    return ResponseEntity.ok(new DoctorBean(doctor.firstName(), doctor.lastName()));
+    return ResponseEntity.ok(new DoctorBean(doctor.doctorId().firstName(), doctor.doctorId().lastName()));
   }
 
   @DeleteMapping(path = "doctor", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
@@ -73,8 +73,8 @@ public class ServerController {
     List<Doctor> doctorList = consultationManager.getDoctorList();
     return ResponseEntity.ok(doctorList.stream().map(doctor -> {
       DoctorBean doctorBean = new DoctorBean();
-      doctorBean.setFirstName(doctor.firstName());
-      doctorBean.setLastName(doctor.lastName());
+      doctorBean.setFirstName(doctor.doctorId().firstName());
+      doctorBean.setLastName(doctor.doctorId().lastName());
       return doctorBean;
     }).toList());
   }
@@ -84,9 +84,7 @@ public class ServerController {
                                                       @PathVariable("doctorLastName") String doctorLastName,
                                                       @PathVariable("patientFirstName") String patientFirstName,
                                                       @PathVariable("patientLastName") String patientLastName) throws DataNotFoundException {
-    Doctor doctor = consultationManager.getDoctorByFirstAndLastName(doctorFirstName, doctorLastName);
-    Patient patient = consultationManager.getPatientByFirstAndLastName(patientFirstName, patientLastName);
-    consultationManager.addPatientToDoctor(patient, doctor);
+    consultationManager.addPatientToDoctor(new PatientId(patientFirstName, patientLastName), new DoctorId(doctorFirstName, doctorLastName));
     return ResponseEntity.ok("Patient assigned to a doctor");
   }
 
@@ -98,8 +96,8 @@ public class ServerController {
     Doctor doctor = consultationManager.getDoctorByFirstAndLastName(doctorFirstName, doctorLastName);
     for (Patient patient : doctor.getPatients()) {
       PatientBean patientBean = new PatientBean();
-      patientBean.setFirstName(patient.firstName());
-      patientBean.setLastName(patient.lastName());
+      patientBean.setFirstName(patient.patientId().firstName());
+      patientBean.setLastName(patient.patientId().lastName());
       patientBeanList.add(patientBean);
     }
     return ResponseEntity.ok(patientBeanList);
@@ -110,11 +108,11 @@ public class ServerController {
                                                                     @PathVariable("patientFirstName") String patientFirstName,
                                                                     @PathVariable("patientLastName") String patientLastName,
                                                                     @RequestBody DoctorBean doctorBean) throws DataNotFoundException {
-    Doctor doctor = consultationManager.getDoctorByFirstAndLastName(doctorBean.getFirstName(), doctorBean.getLastName());
-    Patient patient = consultationManager.getPatientByFirstAndLastName(patientFirstName, patientLastName);
-    Consultation consultation = consultationManager.createConsultation(patient, doctor, consultationName);
+    PatientId patientId = new PatientId(patientFirstName, patientLastName);
+    DoctorId doctorId = new DoctorId(doctorBean.getFirstName(), doctorBean.getLastName());
+    Consultation consultation = consultationManager.createConsultation(patientId, doctorId, consultationName);
     ConsultationBean consultationBean = new ConsultationBean();
-    consultationBean.setConsultationName(consultation.consultationName());
+    consultationBean.setConsultationName(consultation.consultationId().consultationName());
     return ResponseEntity.ok(consultationBean);
   }
 }
