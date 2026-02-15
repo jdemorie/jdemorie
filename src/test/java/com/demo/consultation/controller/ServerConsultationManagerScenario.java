@@ -118,7 +118,7 @@ public class ServerConsultationManagerScenario implements ConsultationScenario {
     String jsonResponse = mvcResult.getResponse().getContentAsString();
     PatientBean[] returnedPatientBeans = objectMapper.readValue(jsonResponse, PatientBean[].class);
     assertEquals(patientIds.length, returnedPatientBeans.length);
-    assertArrayEquals(patientIds, Arrays.stream(returnedPatientBeans).map(p -> new PatientId(p.getFirstName(), p.getLastName())).sorted().toArray());
+    assertArrayEquals(patientIds, Arrays.stream(returnedPatientBeans).map(p -> new PatientId(p.getFirstName(), p.getLastName())).toArray());
     return this;
   }
 
@@ -130,17 +130,33 @@ public class ServerConsultationManagerScenario implements ConsultationScenario {
     String jsonResponse = mvcResult.getResponse().getContentAsString();
     DoctorBean[] returnedDoctorBeans = objectMapper.readValue(jsonResponse, DoctorBean[].class);
     assertEquals(doctorIds.length, returnedDoctorBeans.length);
-    assertArrayEquals(doctorIds, Arrays.stream(returnedDoctorBeans).map(p -> new DoctorId(p.getFirstName(), p.getLastName())).sorted().toArray());
+    assertArrayEquals(doctorIds, Arrays.stream(returnedDoctorBeans).map(p -> new DoctorId(p.getFirstName(), p.getLastName())).toArray());
     return this;
   }
 
   @Override
   public ConsultationScenario thenTheListOfConsultationsStoredShouldBe(ConsultationId... consultationIds) throws Exception {
+    MvcResult mvcResult = mockMvc.perform(get("/server/consultation").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andReturn();
+    String jsonResponse = mvcResult.getResponse().getContentAsString();
+    ConsultationBean[] returnedConsultationBeans = objectMapper.readValue(jsonResponse, ConsultationBean[].class);
+    assertEquals(consultationIds.length, returnedConsultationBeans.length);
+    assertArrayEquals(consultationIds, Arrays.stream(returnedConsultationBeans).map(p -> new ConsultationId(p.getConsultationName())).toArray());
     return this;
   }
 
   @Override
-  public ConsultationScenario thenTheConsultationShouldExistForPatient(PatientId patientId, String... consultationNames) throws Exception {
+  public ConsultationScenario thenTheConsultationShouldExistForPatient(PatientId patientId, ConsultationId... consultationIds) throws Exception {
+    MvcResult mvcResult = mockMvc.perform(get("/server/patient/{firstName}/{lastName}/consultations",
+                                              patientId.firstName(), patientId.lastName())
+                                              .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andReturn();
+    String jsonResponse = mvcResult.getResponse().getContentAsString();
+    ConsultationBean[] returnedConsultationBeans = objectMapper.readValue(jsonResponse, ConsultationBean[].class);
+    assertEquals(consultationIds.length, returnedConsultationBeans.length);
+    assertArrayEquals(consultationIds, Arrays.stream(returnedConsultationBeans).map(p -> new ConsultationId(p.getConsultationName())).toArray());
     return this;
   }
 
@@ -154,6 +170,20 @@ public class ServerConsultationManagerScenario implements ConsultationScenario {
     String jsonResponse = mvcResult.getResponse().getContentAsString();
     PatientBean[] returnedPatientBeans = objectMapper.readValue(jsonResponse, PatientBean[].class);
     assertTrue(Arrays.stream(returnedPatientBeans).map(p -> new PatientId(p.getFirstName(), p.getLastName())).toList().contains(patientId));
+    return this;
+  }
+
+  @Override
+  public ConsultationScenario thenDoctorShouldHaveTheListOfPatients(DoctorId doctorId, PatientId... patientIds) throws Exception {
+    MvcResult mvcResult = mockMvc.perform(get("/server/doctor/{doctorFirstName}/{doctorLastName}/patients",
+                                              doctorId.firstName(), doctorId.lastName())
+                                              .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andReturn();
+    String jsonResponse = mvcResult.getResponse().getContentAsString();
+    PatientBean[] returnedPatientBeans = objectMapper.readValue(jsonResponse, PatientBean[].class);
+    assertEquals(patientIds.length, returnedPatientBeans.length);
+    assertArrayEquals(patientIds, Arrays.stream(returnedPatientBeans).map(p -> new PatientId(p.getFirstName(), p.getLastName())).toArray());
     return this;
   }
 

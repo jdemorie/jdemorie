@@ -81,4 +81,9 @@ public class ConsultationManager {
     }
     return patientConsultations;
   }
+
+  public List<Patient> getPatientsAssignedToDoctor(DoctorId doctorId) throws DataNotFoundException {
+    Doctor doctor = dataManager.getDoctorByFirstAndLastName(doctorId.firstName(), doctorId.lastName());
+    return new ArrayList<>(doctor.getPatients());
+  }
 }

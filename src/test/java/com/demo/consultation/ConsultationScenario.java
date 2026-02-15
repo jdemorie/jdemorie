@@ -25,9 +25,11 @@ public interface ConsultationScenario {
 
   ConsultationScenario thenTheListOfConsultationsStoredShouldBe(ConsultationId... consultationIds) throws Exception;
 
-  ConsultationScenario thenTheConsultationShouldExistForPatient(PatientId patientId, String... consultationNames) throws Exception;
+  ConsultationScenario thenTheConsultationShouldExistForPatient(PatientId patientId, ConsultationId... consultationIds) throws Exception;
 
   ConsultationScenario thenDoctorShouldKnowPatient(DoctorId doctorId, PatientId patientId) throws Exception;
+
+  ConsultationScenario thenDoctorShouldHaveTheListOfPatients(DoctorId doctorId, PatientId... patientIds) throws Exception;
 
   ConsultationScenario whenICleanAllData() throws Exception;
 }

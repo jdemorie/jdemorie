@@ -1,8 +1,7 @@
 package com.demo.consultation;
 
-import com.demo.consultation.domain.Doctor;
+import com.demo.consultation.domain.ConsultationId;
 import com.demo.consultation.domain.DoctorId;
-import com.demo.consultation.domain.Patient;
 import com.demo.consultation.domain.PatientId;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +35,7 @@ public abstract class GlobalConsultationTest {
     scenario.whenICreateADoctor("jerome", "durant")
         .whenICreateAPatient("john", "doe")
         .whenPatientHaveAConsultationWithADoctor(patient, doctor, "firstConsultation")
-        .thenTheConsultationShouldExistForPatient(patient, "firstConsultation")
+        .thenTheConsultationShouldExistForPatient(patient, new ConsultationId("firstConsultation"))
         .thenDoctorShouldKnowPatient(doctor, patient);
   }
 
@@ -48,7 +47,7 @@ public abstract class GlobalConsultationTest {
         .whenICreateAPatient("john", "doe")
         .whenPatientHaveAConsultationWithADoctor(patient, doctor, "firstConsultation")
         .whenPatientHaveAConsultationWithADoctor(patient, doctor, "secondConsultation")
-        .thenTheConsultationShouldExistForPatient(patient, "firstConsultation", "secondConsultation");
+        .thenTheConsultationShouldExistForPatient(patient, new ConsultationId("firstConsultation"), new ConsultationId("secondConsultation"));
   }
 
   @Test
@@ -63,5 +62,18 @@ public abstract class GlobalConsultationTest {
         .whenIAssignAPatientToADoctor(patient2, doctor)
         .thenDoctorShouldKnowPatient(doctor, patient1)
         .thenDoctorShouldKnowPatient(doctor, patient2);
+  }
+
+  @Test
+  void givenADoctorWhenIAskForPatientsAssignedToHimThenIGetTheListOfPatients() throws Exception {
+    DoctorId doctor = new DoctorId("jerome", "durant");
+    PatientId patient1 = new PatientId("john", "doe");
+    PatientId patient2 = new PatientId("jane", "doe");
+    scenario.whenICreateADoctor("jerome", "durant")
+        .whenICreateAPatient("john", "doe")
+        .whenICreateAPatient("jane", "doe")
+        .whenIAssignAPatientToADoctor(patient1, doctor)
+        .whenIAssignAPatientToADoctor(patient2, doctor)
+        .thenDoctorShouldHaveTheListOfPatients(doctor, patient1, patient2);
   }
 }

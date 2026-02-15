@@ -44,6 +44,17 @@ public class ServerController {
     }).toList());
   }
 
+  @GetMapping(path = "patient/{firstName}/{lastName}/consultations", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ConsultationBean>> getConsultationsForPatient(@PathVariable("firstName") String firstName, 
+                                                                           @PathVariable("lastName") String lastName) throws DataNotFoundException {
+    List<Consultation> consultationList = consultationManager.getConsultationsByPatient(firstName, lastName);
+    return ResponseEntity.ok(consultationList.stream().map(consultation -> {
+      ConsultationBean consultationBean = new ConsultationBean();
+      consultationBean.setConsultationName(consultation.consultationId().consultationName());
+      return consultationBean;
+    }).toList());
+  }
+
   @PostMapping(path = "patient", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
   public ResponseEntity<PatientBean> createPatient(@RequestBody PatientBean patientBean) {
     Patient patient = consultationManager.createPatient(patientBean.getFirstName(), patientBean.getLastName());
@@ -101,6 +112,16 @@ public class ServerController {
       patientBeanList.add(patientBean);
     }
     return ResponseEntity.ok(patientBeanList);
+  }
+
+  @GetMapping(path = "consultation", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ConsultationBean>> getConsultations() {
+    List<Consultation> consultationList = consultationManager.getConsultations();
+    return ResponseEntity.ok(consultationList.stream().map(consultation -> {
+      ConsultationBean consultationBean = new ConsultationBean();
+      consultationBean.setConsultationName(consultation.consultationId().consultationName());
+      return consultationBean;
+    }).toList());
   }
 
   @PostMapping(path = "consultation/{consultationName}/patient/{patientFirstName}/{patientLastName}/add", produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_JSON_VALUE)

@@ -62,10 +62,9 @@ public class ConsultationManagerScenario implements ConsultationScenario {
     return this;
   }
 
-  public ConsultationScenario thenTheConsultationShouldExistForPatient(PatientId patientId, String... consultationNames) throws Exception {
+  public ConsultationScenario thenTheConsultationShouldExistForPatient(PatientId patientId, ConsultationId... consultationIds) throws Exception {
     List<Consultation> consultationForPatient = consultationManager.getConsultationsByPatient(patientId.firstName(), patientId.lastName());
-    assertArrayEquals(consultationNames,
-                      consultationForPatient.stream().map(consultation -> consultation.consultationId().consultationName()).toArray());
+    assertArrayEquals(consultationIds, consultationForPatient.stream().map(Consultation::consultationId).toArray());
     return this;
   }
 
@@ -73,6 +72,13 @@ public class ConsultationManagerScenario implements ConsultationScenario {
     Patient patient = consultationManager.getPatientByFirstAndLastName(patientId.firstName(), patientId.lastName());
     Doctor doctor = consultationManager.getDoctorByFirstAndLastName(doctorId.firstName(), doctorId.lastName());
     assertTrue(doctor.knowsPatient(patient));
+    return this;
+  }
+
+  @Override
+  public ConsultationScenario thenDoctorShouldHaveTheListOfPatients(DoctorId doctorId, PatientId... patientIds) throws Exception {
+    List<Patient> patientList = consultationManager.getPatientsAssignedToDoctor(doctorId);
+    assertArrayEquals(patientIds, patientList.stream().map(Patient::patientId).toArray());
     return this;
   }
 
